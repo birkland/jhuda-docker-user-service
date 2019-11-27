@@ -8,6 +8,10 @@ import (
 )
 
 func main() {
+	run(os.Args)
+}
+
+func run(args []string) {
 	app := &cli.App{
 		Name:  "JHUDA user service",
 		Usage: "Provides an http endpoint for determining user info based on shibboleth headers",
@@ -16,7 +20,7 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(args)
 	if err != nil {
 		log.Fatal(err)
 	}

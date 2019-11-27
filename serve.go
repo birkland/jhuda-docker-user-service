@@ -51,7 +51,7 @@ func serve() *cli.Command {
 }
 
 func serveAction(us UserService, port int) error {
-	http.Handle("whoami", httpUserService(us))
+	http.Handle("/whoami", httpUserService(us))
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err

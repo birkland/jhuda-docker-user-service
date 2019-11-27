@@ -15,6 +15,7 @@ func httpUserService(svc userProvider) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
 		}
 
 		user, err := svc.FromHeaders(r.Header)
@@ -24,13 +25,11 @@ func httpUserService(svc userProvider) http.Handler {
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
-			_, err := w.Write([]byte(err.Error()))
-			if err != nil {
-				log.Printf("Error sending response: %v", err)
-			}
+			_, _ = w.Write([]byte(err.Error()))
 			return
 		}
 
+		w.Header().Add("Content-Type", "application/json;charset=utf-8")
 		err = user.Serialize(w)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
