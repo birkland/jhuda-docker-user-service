@@ -1,6 +1,6 @@
 # JHUDA user service
 
-[![Build Status](https://travis-ci.com/jhu-sheridan-libraries/jhuda-user-service.svg?branch=master)](https://travis-ci.com/jhu-sheridan-libraries/jhuda-user-service)
+[![Build Status](https://travis-ci.org/jhu-sheridan-libraries/jhuda-user-service.svg?branch=master)](https://travis-ci.org/jhu-sheridan-libraries/jhuda-user-service)
 
 Contains the JHUDA user service, which provides an HTTP API for finding information about the 
 current shibboleth logged-in user.  Presumes the incoming requests are protected by shibboleth, and
