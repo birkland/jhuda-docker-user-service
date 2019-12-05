@@ -6,17 +6,19 @@ import (
 )
 
 type User struct {
-	ID          string   `json:"id"`
-	Username    string   `json:"username"`
-	Firstname   string   `json:"firstName"`
-	Middlename  string   `json:"middleName"`
-	Lastname    string   `json:"lastName"`
-	Displayname string   `json:"displayName"`
-	Email       string   `json:"email"`
-	Affiliation []string `json:"affiliation"`
-	Locatorids  []string `json:"locatorIds"`
-	OrcidID     string   `json:"orcidId"`
-	Roles       []string `json:"roles"`
+	ID          string   `json:"@id"`
+	Type        string   `json:"@type,omitempty"`
+	Context     string   `json:"@context,omitempty"`
+	Username    string   `json:"username,omitempty"`
+	Firstname   string   `json:"firstName,omitempty"`
+	Middlename  string   `json:"middleName,omitempty"`
+	Lastname    string   `json:"lastName,omitempty"`
+	Displayname string   `json:"displayName,omitempty"`
+	Email       string   `json:"email,omitempty"`
+	Affiliation []string `json:"affiliation,omitempty"`
+	Locatorids  []string `json:"locatorIds,omitempty"`
+	OrcidID     string   `json:"orcidId,omitempty"`
+	Roles       []string `json:"roles,omitempty"`
 }
 
 func (u *User) Serialize(w io.Writer) error {

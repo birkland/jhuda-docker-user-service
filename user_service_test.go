@@ -43,6 +43,7 @@ func TestLocatorIDs(t *testing.T) {
 		},
 		expected: &jhuda.User{
 			ID:          "http://example.org/fcrepo/rest/users/foo@example.org",
+			Type:        "User",
 			Firstname:   "Bo",
 			Lastname:    "Vine",
 			Displayname: "MOOO",
@@ -62,6 +63,7 @@ func TestLocatorIDs(t *testing.T) {
 		},
 		expected: &jhuda.User{
 			ID:          "http://example.org/fcrepo/rest/users/foo@example.org",
+			Type:        "User",
 			Firstname:   "Bo",
 			Lastname:    "Vine",
 			Displayname: "MOOO",
@@ -86,6 +88,7 @@ func TestLocatorIDs(t *testing.T) {
 		},
 		expected: &jhuda.User{
 			ID:          "http://example.org/fcrepo/rest/users/foo@example.org",
+			Type:        "User",
 			Displayname: "MOOO",
 			Email:       "me@example.org",
 		},
@@ -210,5 +213,48 @@ func TestRoles(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestContext(t *testing.T) {
+	cases := map[string]struct {
+		context  string
+		expected *jhuda.User
+	}{
+		"no context": {
+			expected: &jhuda.User{
+				ID:         "foo@example.org",
+				Type:       "User",
+				Locatorids: []string{"example.org:Eppn:foo@example.org"},
+			},
+		},
+		"defined context": {
+			context: "http://example.org/context/",
+			expected: &jhuda.User{
+				ID:         "foo@example.org",
+				Type:       "User",
+				Context:    "http://example.org/context/",
+				Locatorids: []string{"example.org:Eppn:foo@example.org"},
+			},
+		},
+	}
+
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			user, err := jhuda.UserService{
+				JsonldContext: tc.context,
+			}.FromHeaders(http.Header(map[string][]string{
+				"Eppn": {"foo@example.org"},
+			}))
+
+			if err != nil {
+				t.Fatalf("Got an error: %v", err)
+			}
+
+			diffs := deep.Equal(tc.expected, user)
+			if len(diffs) > 0 {
+				t.Fatalf("Got User that differs from expected:\n%s", strings.Join(diffs, "\n"))
+			}
+		})
+	}
 }

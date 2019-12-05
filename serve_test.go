@@ -3,45 +3,114 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-test/deep"
 	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/go-test/deep"
 )
 
-func TestDefaultServe(t *testing.T) {
+func TestServe(t *testing.T) {
 
-	port := strconv.Itoa(randomPort(t))
-	go run([]string{os.Args[0], "serve", "-port", port})
-
-	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/whoami", port), nil)
-	req.Header.Add(DefaultShibHeaders.Eppn, "foo@example.org")
-	req.Header.Add(DefaultShibHeaders.Email, "me@example.org")
-
-	resp := attempt(t, req)
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		t.Fatalf("Did not get a 200 response, got %d", resp.StatusCode)
+	cases := map[string]struct {
+		args     []string
+		headers  map[string]string
+		expected User
+	}{
+		"defaults": {
+			headers: map[string]string{
+				DefaultShibHeaders.Eppn:        "foo@example.org",
+				DefaultShibHeaders.Email:       "me@example.org",
+				DefaultShibHeaders.Displayname: "Moo",
+				DefaultShibHeaders.GivenName:   "Bos",
+				DefaultShibHeaders.LastName:    "Taurus",
+			},
+			expected: User{
+				ID:          "foo@example.org",
+				Type:        "User",
+				Email:       "me@example.org",
+				Displayname: "Moo",
+				Firstname:   "Bos",
+				Lastname:    "Taurus",
+				Locatorids:  []string{"example.org:Eppn:foo@example.org"},
+			},
+		},
+		"custom headers": {
+			args: []string{
+				"-eppnHeader", "Test-Eppn",
+				"-displayNameHeader", "Test-Displayname",
+				"-emailHeader", "Test-Email",
+				"-givenNameHeader", "Test-Givenname",
+				"-lastNameHeader", "Test-Lastname",
+				"-locatorHeaders", "Foo,Bar"},
+			headers: map[string]string{
+				"Test-Eppn":        "foo@example.org",
+				"Test-Email":       "me@example.org",
+				"Test-Displayname": "MOO",
+				"Test-Givenname":   "Bos",
+				"Test-Lastname":    "Taurus",
+				"Foo":              "foo",
+				"Bar":              "bar",
+			},
+			expected: User{
+				ID:          "foo@example.org",
+				Type:        "User",
+				Email:       "me@example.org",
+				Displayname: "MOO",
+				Firstname:   "Bos",
+				Lastname:    "Taurus",
+				Locatorids:  []string{"example.org:Foo:foo", "example.org:Bar:bar"},
+			},
+		},
+		"user baseurl": {
+			args: []string{"-userBaseUrl", "http://example.org/fcrepo/rest/"},
+			headers: map[string]string{
+				DefaultShibHeaders.Eppn: "foo@example.org",
+			},
+			expected: User{
+				ID:         "http://example.org/fcrepo/rest/foo@example.org",
+				Type:       "User",
+				Locatorids: []string{"example.org:Eppn:foo@example.org"},
+			},
+		},
 	}
 
-	var user User
-	err := json.NewDecoder(resp.Body).Decode(&user)
-	if err != nil {
-		t.Fatalf("Bad JSON User response: %s", err)
-	}
+	for name, tc := range cases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			port := strconv.Itoa(randomPort(t))
+			args := append([]string{os.Args[0], "serve", "-port", port}, tc.args...)
 
-	expected := User{
-		ID:         "foo@example.org",
-		Email:      "me@example.org",
-		Locatorids: []string{"example.org:Eppn:foo@example.org"},
-	}
+			go run(args)
 
-	diffs := deep.Equal(user, expected)
-	if len(diffs) > 0 {
-		t.Fatalf("returned user does not match expected:\n%s", strings.Join(diffs, "\n"))
+			req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/whoami", port), nil)
+			for k, v := range tc.headers {
+				req.Header.Add(k, v)
+			}
+
+			resp := attempt(t, req)
+			defer resp.Body.Close()
+			if resp.StatusCode != 200 {
+				t.Fatalf("Did not get a 200 response, got %d", resp.StatusCode)
+			}
+
+			var user User
+			err := json.NewDecoder(resp.Body).Decode(&user)
+			if err != nil {
+				t.Fatalf("Bad JSON User response: %s", err)
+			}
+
+			diffs := deep.Equal(user, tc.expected)
+			if len(diffs) > 0 {
+				t.Fatalf("returned user does not match expected:\n%s", strings.Join(diffs, "\n"))
+			}
+
+			proc, _ := os.FindProcess(os.Getpid())
+			_ = proc.Signal(os.Interrupt)
+		})
 	}
 }
 

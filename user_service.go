@@ -12,6 +12,7 @@ type HeaderProvider interface {
 	Get(key string) (val string) // Get a header value
 }
 
+// RoleLookup finds all roles a given user has
 type RoleLookup interface {
 	Lookup(u *User) ([]Role, error)
 }
@@ -19,9 +20,10 @@ type RoleLookup interface {
 // UserService provides the identity and information associated with a User by inspecting
 // Http headers
 type UserService struct {
-	UserBase   string
-	HeaderDefs ShibHeaders
-	Roles      RoleLookup
+	UserBase      string      // BaseURI for user IDs, e.g. http://archive.local/fcrepo/rest/users/
+	JsonldContext string      // JSON-LD context URI for User resources
+	HeaderDefs    ShibHeaders // Header definitions
+	Roles         RoleLookup  // Role lookup service
 }
 
 func (u UserService) FromHeaders(headers HeaderProvider) (*User, error) {
@@ -33,9 +35,10 @@ func (u UserService) FromHeaders(headers HeaderProvider) (*User, error) {
 
 	user := &User{
 		ID:          u.UserBase + eppn,
+		Type:        "User",
+		Context:     u.JsonldContext,
 		Displayname: headers.Get(oneOf(u.HeaderDefs.Displayname, DefaultShibHeaders.Displayname)),
 		Firstname:   headers.Get(oneOf(u.HeaderDefs.GivenName, DefaultShibHeaders.GivenName)),
-		Middlename:  headers.Get(oneOf(u.HeaderDefs.MiddleName, DefaultShibHeaders.MiddleName)),
 		Lastname:    headers.Get(oneOf(u.HeaderDefs.LastName, DefaultShibHeaders.LastName)),
 		Email:       headers.Get(oneOf(u.HeaderDefs.Email, DefaultShibHeaders.Email)),
 		Locatorids:  u.locatorIds(u.HeaderDefs.LocatorIDs, headers),
