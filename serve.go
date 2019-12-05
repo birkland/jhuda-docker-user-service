@@ -96,6 +96,7 @@ func serve() *cli.Command {
 
 func serveAction(us UserService, port int) error {
 	stop := make(chan os.Signal, 1)
+	done := make(chan error, 1)
 	signal.Notify(stop, os.Interrupt)
 
 	mux := http.NewServeMux()
@@ -106,15 +107,17 @@ func serveAction(us UserService, port int) error {
 		Handler: mux,
 	}
 
-	var err error
 	go func() {
 		log.Printf("Listening on port %d", port)
-		err = server.ListenAndServe()
+		done <- server.ListenAndServe()
 	}()
 
-	<-stop
-	_ = server.Shutdown(context.Background())
-
-	log.Printf("Goodbye!")
-	return err
+	select {
+	case <-stop:
+		_ = server.Shutdown(context.Background())
+		log.Printf("Goodbye!")
+		return nil
+	case err := <-done:
+		return err
+	}
 }

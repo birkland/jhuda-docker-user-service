@@ -108,6 +108,7 @@ func TestServe(t *testing.T) {
 				t.Fatalf("returned user does not match expected:\n%s", strings.Join(diffs, "\n"))
 			}
 
+			// Basically, send our server a ^C and let it stop itself gracefully
 			proc, _ := os.FindProcess(os.Getpid())
 			_ = proc.Signal(os.Interrupt)
 		})
