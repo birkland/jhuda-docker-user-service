@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-test/deep"
 )
@@ -119,11 +120,12 @@ func attempt(t *testing.T, req *http.Request) *http.Response {
 	var err error
 	var resp *http.Response
 	client := &http.Client{}
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 100; i++ {
 		resp, err = client.Do(req)
 		if err == nil {
 			return resp
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	t.Fatalf("Connect to user service failed: %s", err)
