@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "Executing 'docker build' with the following environment:"
+env
+
+docker build --label "SOURCE_BRANCH=${SOURCE_BRANCH}" \
+             --label "SOURCE_COMMIT=${SOURCE_COMMIT}" \
+             --label "DOCKER_REPO=${DOCKER_REPO}" \
+             --label "DOCKERFILE_PATH=${DOCKERFILE_PATH}" \
+             --label "DOCKER_TAG=${DOCKER_TAG}" \
+             --label "IMAGE_NAME=${IMAGE_NAME}" \
+             --label "SOURCE_REPOSITORY_URL=${SOURCE_REPOSITORY_URL}" \
+             -t ${IMAGE_NAME} \
+             -f ${DOCKERFILE_PATH} \
+             .
