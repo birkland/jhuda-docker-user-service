@@ -109,12 +109,12 @@ func TestServe(t *testing.T) {
 			if len(diffs) > 0 {
 				t.Fatalf("returned user does not match expected:\n%s", strings.Join(diffs, "\n"))
 			}
-
-			// Basically, send our server a ^C and let it stop itself gracefully
-			proc, _ := os.FindProcess(os.Getpid())
-			_ = proc.Signal(os.Interrupt)
 		})
 	}
+
+	// Basically, send our server(s) a ^C and let themselves stop gracefully
+	proc, _ := os.FindProcess(os.Getpid())
+	_ = proc.Signal(os.Interrupt)
 }
 
 func attempt(t *testing.T, req *http.Request) *http.Response {
