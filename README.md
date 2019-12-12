@@ -1,18 +1,18 @@
 # JHUDA user service
 
-[![Build Status](https://travis-ci.org/jhu-sheridan-libraries/jhuda-user-service.svg?branch=master)](https://travis-ci.org/jhu-sheridan-libraries/jhuda-user-service)
+[![Build Status](https://travis-ci.com/jhu-sheridan-libraries/jhuda-docker-user-service.svg?branch=master)](https://travis-ci.com/jhu-sheridan-libraries/jhuda-docker-user-service)
 
-Contains the JHUDA user service, which provides an HTTP API for finding information about the 
+Contains the JHUDA user service, which provides an HTTP API for finding information about the
 current shibboleth logged-in user.  Presumes the incoming requests are protected by shibboleth, and
 shibboleth releases attributes about the current user.
 
 ## Usage
 
-    jhuda-user-service serve
+    jhuda-docker-user-service serve
 
 ## Configuration
 
-For cli flags, see `jhuda-user-service help`
+For cli flags, see `jhuda-docker-user-service help`
 
 Environment variables are as follows:
 
@@ -27,4 +27,4 @@ Shibboleth headers can be controlled by headers as well, if the defaults don't w
 * `SHIB_HEADER_EMAIL`: Name of the e-mail header (default `Mail`)
 * `SHIB_HEADER_GIVEN_NAME`: Name of the "given name" header (default `Givenname`)
 * `SHIB_HEADER_LAST_NAME`: Name of the "last name" header (default: `Sn`)
-* `SHIB_HEADERS_LOCATOR`: Comma-separated list of all headers to use as locators (default `Employeenumber,unique-id,Eppn`)
+* `SHIB_HEADERS_LOCATOR`: Comma-separated list of all headers to use as locators (default `Employeenumber,unique-id,Eppn`

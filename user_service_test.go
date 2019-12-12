@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	jhuda "github.com/jhu-sheridan-libraries/jhuda-user-service"
+	jhuda "github.com/jhu-sheridan-libraries/jhuda-docker-user-service"
 )
 
 func TestLocatorIDs(t *testing.T) {

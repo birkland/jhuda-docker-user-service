@@ -3,7 +3,7 @@ package main_test
 import (
 	"testing"
 
-	jhuda "github.com/jhu-sheridan-libraries/jhuda-user-service"
+	jhuda "github.com/jhu-sheridan-libraries/jhuda-docker-user-service"
 )
 
 func TestRole(t *testing.T) {

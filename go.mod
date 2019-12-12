@@ -1,4 +1,4 @@
-module github.com/jhu-sheridan-libraries/jhuda-user-service
+module github.com/jhu-sheridan-libraries/jhuda-docker-user-service
 
 go 1.13
 
