@@ -85,6 +85,7 @@ func TestServe(t *testing.T) {
 			port := strconv.Itoa(randomPort(t))
 			args := append([]string{os.Args[0], "serve", "-port", port}, tc.args...)
 
+			t.Logf("Starting server at port %s", port)
 			go run(args)
 
 			req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("http://localhost:%s/whoami", port), nil)
@@ -120,6 +121,7 @@ func attempt(t *testing.T, req *http.Request) *http.Response {
 	var err error
 	var resp *http.Response
 	client := &http.Client{}
+	t.Logf("Attempting to connect to %s", req.URL)
 	for i := 0; i < 100; i++ {
 		resp, err = client.Do(req)
 		if err == nil {
