@@ -61,19 +61,21 @@ func TestContested(t *testing.T) {
 	exec1 := make(chan bool)
 	ready1 := make(chan bool)
 	ready2 := make(chan bool)
-	done2 := make(chan bool)
-	var result1, result2 []jhuda.Role
+	result1 := make(chan []jhuda.Role)
+	result2 := make(chan []jhuda.Role)
 
 	expected := []jhuda.Role{{Name: "foo"}}
 
 	// 1: This will execute and calculate the result once we signal it to do so
 	// on the exec channel
 	go func() {
-		result1, _ = cache.GetOrAdd("foo", func() ([]jhuda.Role, error) {
+		result, _ := cache.GetOrAdd("foo", func() ([]jhuda.Role, error) {
 			ready1 <- true
 			<-exec1
 			return []jhuda.Role{{Name: "foo"}}, nil
 		})
+
+		result1 <- result
 	}()
 
 	<-ready1 // Wait until our generator function is running, but paused until we signal
@@ -81,27 +83,26 @@ func TestContested(t *testing.T) {
 	// 2: This will block, and return the result from 1
 	go func() {
 		ready2 <- true
-		result2, _ = cache.GetOrAdd("foo", func() ([]jhuda.Role, error) {
+		result, _ := cache.GetOrAdd("foo", func() ([]jhuda.Role, error) {
 			// This shouldn't execute
 			t.Fatalf("Cache function executed when not expected to!")
 			return []jhuda.Role{{Name: "bar"}}, nil
 		})
-		done2 <- true
+		result2 <- result
 	}()
 
 	<-ready2 // Wait until 2 blocks on 1 finishing
 
 	exec1 <- true // Let 1 execute
 
-	<-done2 // Wait for 2 to unblock, which happens after 1 is finished
-
-	if diffs := deep.Equal(expected, result1); len(diffs) > 0 {
+	if diffs := deep.Equal(expected, <-result2); len(diffs) > 0 {
 		t.Fatalf("Did not get expected cached result:\n%s", strings.Join(diffs, "\n"))
 	}
 
-	if diffs := deep.Equal(expected, result2); len(diffs) > 0 {
+	if diffs := deep.Equal(expected, <-result1); len(diffs) > 0 {
 		t.Fatalf("Did not get expected cached result:\n%s", strings.Join(diffs, "\n"))
 	}
+
 }
 
 func TestError(t *testing.T) {
