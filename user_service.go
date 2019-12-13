@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -30,6 +31,7 @@ func (u UserService) FromHeaders(headers HeaderProvider) (*User, error) {
 	eppn := headers.Get(oneOf(u.HeaderDefs.Eppn, DefaultShibHeaders.Eppn))
 
 	if !strings.Contains(eppn, "@") {
+		log.Printf("Bad Eppn (from %s).  Headers are: \n%+v", u.HeaderDefs.Eppn, headers)
 		return nil, ErrorBadInput(fmt.Sprintf("Eppn is expected to be user@domain, instead got '%s'", eppn))
 	}
 
@@ -61,9 +63,18 @@ func (u UserService) locatorIds(locators []string, headers HeaderProvider) []str
 	domain := strings.Split(headers.Get(oneOf(u.HeaderDefs.Eppn, DefaultShibHeaders.Eppn)), "@")[1]
 
 	for _, locator := range locators {
-		val := headers.Get(locator)
+		headerName := locator
+		locatorName := locator
+
+		if strings.Contains(locator, ":") {
+			parts := strings.Split(locator, ":")
+			headerName = parts[0]
+			locatorName = parts[1]
+		}
+
+		val := headers.Get(headerName)
 		if val != "" {
-			locatorIds = append(locatorIds, domain+":"+locator+":"+val)
+			locatorIds = append(locatorIds, domain+":"+locatorName+":"+val)
 		}
 	}
 

@@ -27,4 +27,5 @@ Shibboleth headers can be controlled by headers as well, if the defaults don't w
 * `SHIB_HEADER_EMAIL`: Name of the e-mail header (default `Mail`)
 * `SHIB_HEADER_GIVEN_NAME`: Name of the "given name" header (default `Givenname`)
 * `SHIB_HEADER_LAST_NAME`: Name of the "last name" header (default: `Sn`)
-* `SHIB_HEADERS_LOCATOR`: Comma-separated list of all headers to use as locators (default `Employeenumber,unique-id,Eppn`
+* `SHIB_HEADER_LOCATORS`: Comma-separated list of all headers to use as locators (default `Employeenumber,unique-id,Eppn`).  
+  * Values may be colon separated `headerName:locatorName` for using a different values for header and locatorId.  For example, `Ajp_unique-id:unique-id` could result in extracting the value of header `Ajp_unique-id: foo` to formulate the locator `johnshopkins.edu:unique-id:foo`

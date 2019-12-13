@@ -92,6 +92,35 @@ func TestLocatorIDs(t *testing.T) {
 			Displayname: "MOOO",
 			Email:       "me@example.org",
 		},
+	}, {
+		name: "renamed",
+		headerDefs: jhuda.ShibHeaders{
+			LocatorIDs: []string{
+				"Eppn:foo-eppn",
+				"Employeenumber:foo-employee",
+			},
+		},
+		headers: map[string][]string{
+			"Eppn":           {"foo@example.org"},
+			"Mail":           {"me@example.org"},
+			"Givenname":      {"Bo"},
+			"Sn":             {"Vine"},
+			"Displayname":    {"MOOO"},
+			"Employeenumber": {"foo"},
+			"Unique-Id":      {"bar"},
+		},
+		expected: &jhuda.User{
+			ID:          "http://example.org/fcrepo/rest/users/foo@example.org",
+			Type:        "User",
+			Firstname:   "Bo",
+			Lastname:    "Vine",
+			Displayname: "MOOO",
+			Email:       "me@example.org",
+			Locatorids: []string{
+				"example.org:foo-eppn:foo@example.org",
+				"example.org:foo-employee:foo",
+			},
+		},
 	}}
 
 	for _, c := range cases {

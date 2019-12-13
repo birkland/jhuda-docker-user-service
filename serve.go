@@ -75,7 +75,7 @@ func serve() *cli.Command {
 				Name:     "locatorHeaders",
 				Usage:    "comma-separated list of headers to use as locators",
 				Required: false,
-				EnvVars:  []string{"SHIB_HEADERS_LOCATOR"},
+				EnvVars:  []string{"SHIB_HEADER_LOCATORS"},
 				Value:    strings.Join(DefaultShibHeaders.LocatorIDs, ","),
 			},
 			&cli.StringFlag{
