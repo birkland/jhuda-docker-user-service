@@ -1,0 +1,84 @@
+version: '3.1'
+
+services:
+
+  user-service:
+    build:
+        context: .
+    container_name: user-service
+    image: jhuda/user-service:latest
+    env_file: .env
+    networks:
+      - back
+
+  idp:
+    image: jhuda/idp:latest
+    container_name: idp
+    depends_on:
+      - ldap
+    environment:
+      - JETTY_MAX_HEAP=64m
+      - JETTY_BROWSER_SSL_KEYSTORE_PASSWORD=password
+      - JETTY_BACKCHANNEL_SSL_KEYSTORE_PASSWORD=password
+    networks:
+      - back
+    expose:
+      - "443"
+    secrets:
+      - source: idp_backchannel
+      - source: idp_browser
+      - source: idp_encryption
+      - source: idp_signing
+      - source: idp_sealer
+
+  sp:
+    image: jhuda/sp:latest
+    container_name: sp
+    networks:
+      back:
+        aliases:
+          - archive.local
+    volumes:
+      - certs:/etc/httpd/ssl
+    secrets:
+      - source: sp_key
+    
+  ldap:
+    image: jhuda/ldap:latest
+    container_name: ldap
+    networks:
+      - back
+
+  proxy:
+    image: jhuda/proxy:latest
+    container_name: proxy
+    volumes:
+      - certs:/etc/httpd/ssl
+    networks:
+      - front
+      - back
+    ports:
+      - "80:80"
+      - "443:443"
+
+networks:
+  front:
+  back:
+
+volumes:
+  certs:
+    driver: local
+
+secrets:
+  idp_backchannel:
+    file: ./secrets/idp/idp-backchannel.p12
+  idp_browser:
+    file: ./secrets/idp/idp-browser.p12
+  idp_encryption:
+    file: ./secrets/idp/idp-encryption.key
+  idp_signing:
+    file: ./secrets/idp/idp-signing.key
+  idp_sealer:
+    file: ./secrets/idp/sealer.jks
+  sp_key:
+    file: ./secrets/sp/sp-key.pem
