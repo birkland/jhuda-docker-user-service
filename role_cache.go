@@ -60,15 +60,9 @@ func NewRoleCache(cfg RoleCacheConfig) *RoleCache {
 // will block until a value is available or the function
 // returns an error. In the case of an error, the value will not be added to
 // the cache, and all pending Get requests will return the error
-func (c *RoleCache) GetOrAdd(id string, roles func() ([]Role, error)) ([]Role, error) {
+func (c *RoleCache) GetOrAdd(id string, generateRoles func() ([]Role, error)) ([]Role, error) {
 
-	// Fast path: see if we have a cached entry already
-	cached, found, err := c.get(id)
-	if found {
-		return cached, err
-	}
-
-	// Critical section.  Global lock, double check that we don't have a cached entry, and create/add a locked one if not
+	// Critical section.  Check that we don't have a cached entry, and create/add a locked one if not
 	cached, entry, found, err := func() ([]Role, *cacheEntry, bool, error) {
 		c.m.Lock()
 		defer c.m.Unlock()
@@ -91,7 +85,7 @@ func (c *RoleCache) GetOrAdd(id string, roles func() ([]Role, error)) ([]Role, e
 	// OK, now execute the roles function and unlock the cache entry when done.
 	defer entry.Unlock()
 
-	if entry.roles, err = roles(); err != nil {
+	if entry.roles, err = generateRoles(); err != nil {
 		entry.ok = false
 		c.cache.Remove(id)
 		return nil, err
